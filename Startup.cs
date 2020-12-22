@@ -1,24 +1,57 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
+using EpubWebLibraryServer.Areas.User.Data;
 
 namespace EpubWebLibraryServer
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
+        public Startup(IConfiguration configuration)
         {
+            Configuration = configuration;
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public IConfiguration Configuration { get; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddControllers();
+
+            if (!String.IsNullOrEmpty(Configuration.GetConnectionString("Postgresql")))
+            {
+                services.AddDbContext<UserDbContext>(options =>
+                    options.UseNpgsql(Configuration.GetConnectionString("Postgresql")));
+            }
+            else
+            {
+                services.AddDbContext<UserDbContext>(options =>
+                    options.UseSqlite(Configuration.GetConnectionString("Sqlite")));
+            }
+
+            services.AddIdentity<ApplicationUser, ApplicationRole>(options => Configuration.Bind("IdentityOptions", options))
+                .AddEntityFrameworkStores<UserDbContext>();
+
+            services.AddAuthentication(options => 
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+                {
+                    Configuration.Bind("JwtBearerOptions", options);
+                    options.TokenValidationParameters.TokenDecryptionKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(Configuration.GetValue<string>("JwtSettings:EncryptingSecret")));
+                    options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(Configuration.GetValue<string>("JwtSettings:SigningSecret")));
+                });
+        }
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -28,12 +61,15 @@ namespace EpubWebLibraryServer
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
+            app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{area}/{controller}/{action}");
             });
         }
     }
