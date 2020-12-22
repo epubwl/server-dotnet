@@ -9,11 +9,10 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
 {
     [ApiController]
     [Area("User")]
-    [Route("api/[area]/[controller]/[action]")]
     public class AuthenticationController : Controller
     {
         private readonly ITokenGenerator _tokenGenerator;
-        
+
         private readonly UserManager<ApplicationUser> _userManager;
         
         public AuthenticationController(ITokenGenerator tokenGenerator, UserManager<ApplicationUser> userManager)
@@ -23,6 +22,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
         }
 
         [HttpPost]
+        [Route("/api/[area]")]
         public async Task<IActionResult> Register([FromBody] UserCredentials userCredentials)
         {
             var user = new ApplicationUser()
@@ -38,6 +38,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
         }
 
         [HttpPost]
+        [Route("/api/[area]/[action]")]
         public async Task<IActionResult> Login([FromBody] UserCredentials userCredentials)
         {
             ApplicationUser user = await _userManager.FindByNameAsync(userCredentials.Username);
