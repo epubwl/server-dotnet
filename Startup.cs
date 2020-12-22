@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
 using EpubWebLibraryServer.Areas.User.Data;
+using EpubWebLibraryServer.Areas.User.Services;
 
 namespace EpubWebLibraryServer
 {
@@ -50,6 +51,8 @@ namespace EpubWebLibraryServer
                     options.TokenValidationParameters.TokenDecryptionKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(Configuration.GetValue<string>("JwtSettings:EncryptingSecret")));
                     options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(Configuration.GetValue<string>("JwtSettings:SigningSecret")));
                 });
+            
+            services.AddSingleton<ITokenGenerator, JwtGenerator>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
