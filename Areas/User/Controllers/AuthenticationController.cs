@@ -42,13 +42,10 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
         public async Task<IActionResult> Login([FromBody] UserCredentials userCredentials)
         {
             ApplicationUser user = await _userManager.FindByNameAsync(userCredentials.Username);
-            foreach (IPasswordValidator<ApplicationUser> passwordValidator in _userManager.PasswordValidators)
+            PasswordVerificationResult result = _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, userCredentials.Password);
+            if (result != PasswordVerificationResult.Success)
             {
-                IdentityResult result = await passwordValidator.ValidateAsync(_userManager, user, userCredentials.Password);
-                if (!result.Succeeded)
-                {
-                    return BadRequest();
-                }
+                return BadRequest();
             }
             return Ok(new { token = _tokenGenerator.GenerateToken(user) });
         }
