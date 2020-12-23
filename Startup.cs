@@ -25,9 +25,7 @@ namespace EpubWebLibraryServer
 
             Action<DbContextOptionsBuilder> dbContextOptionsAction = ChooseDatabaseProvider();
 
-            var jwtAuthenticationOptions = new JwtAuthenticationOptions();
-            Configuration.Bind("JwtAuthenticationSettings", jwtAuthenticationOptions);
-            services.AddJwtAuthentication(dbContextOptionsAction, jwtAuthenticationOptions);
+            services.AddJwtAuthentication(dbContextOptionsAction, options => Configuration.Bind("JwtAuthenticationSettings", options));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

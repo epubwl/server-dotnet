@@ -11,16 +11,12 @@ namespace EpubWebLibraryServer.Areas.User.Extensions
 {
     public static class JwtAuthenticationExtensions
     {
-        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, Action<DbContextOptionsBuilder> dbContextOptionsAction, JwtAuthenticationOptions jwtAuthenticationOptions)
+        public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, Action<DbContextOptionsBuilder> dbContextOptionsAction, Action<JwtAuthenticationOptions> jwtAuthenticationOptionsAction)
         {
-            services.Configure<JwtAuthenticationOptions>(options => 
-            {
-                options.Audience = jwtAuthenticationOptions.Audience;
-                options.Issuer = jwtAuthenticationOptions.Issuer;
-                options.EncryptingSecret = jwtAuthenticationOptions.EncryptingSecret;
-                options.SigningSecret = jwtAuthenticationOptions.SigningSecret;
-                options.LifetimeInMinutes = jwtAuthenticationOptions.LifetimeInMinutes;
-            });
+            var jwtAuthenticationOptions = new JwtAuthenticationOptions();
+            jwtAuthenticationOptionsAction(jwtAuthenticationOptions);
+
+            services.Configure<JwtAuthenticationOptions>(jwtAuthenticationOptionsAction);
 
             services.AddDbContext<UserDbContext>(dbContextOptionsAction);
 
