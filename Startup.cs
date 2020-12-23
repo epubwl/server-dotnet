@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using EpubWebLibraryServer.Areas.User.Extensions;
-using EpubWebLibraryServer.Areas.User.Services;
 
 namespace EpubWebLibraryServer
 {
