@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -11,26 +10,27 @@ namespace EpubWebLibraryServer.Areas.User.Services
 {
     public class JwtGenerator : ITokenGenerator
     {
-        private readonly IConfiguration _configuration;
+        private readonly IOptionsMonitor<JwtAuthenticationOptions> _jwtAuthenticationOptionsMonitor;
 
-        private readonly IOptionsMonitor<JwtBearerOptions> _optionsMonitor;
+        private readonly IOptionsMonitor<JwtBearerOptions> _jwtBearerOptionsMonitor;
 
-        public JwtGenerator(IConfiguration configuration, IOptionsMonitor<JwtBearerOptions> optionsMonitor)
+        public JwtGenerator(IOptionsMonitor<JwtAuthenticationOptions> jwtAuthenticationOptionsMonitor, IOptionsMonitor<JwtBearerOptions> jwtBearerOptionsMonitor)
         {
-            this._configuration = configuration;
-            this._optionsMonitor = optionsMonitor;
+            this._jwtAuthenticationOptionsMonitor = jwtAuthenticationOptionsMonitor;
+            this._jwtBearerOptionsMonitor = jwtBearerOptionsMonitor;
         }
 
         public string GenerateToken(ApplicationUser user)
         {
             var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-            JwtBearerOptions jwtBearerOptions = _optionsMonitor.Get(JwtBearerDefaults.AuthenticationScheme);
+            JwtAuthenticationOptions jwtAuthenticationOptions = _jwtAuthenticationOptionsMonitor.Get(Options.DefaultName);
+            JwtBearerOptions jwtBearerOptions = _jwtBearerOptionsMonitor.Get(JwtBearerDefaults.AuthenticationScheme);
             var securityTokenDescriptor = new SecurityTokenDescriptor()
             {
-                Audience = jwtBearerOptions.Audience,
+                Audience = jwtAuthenticationOptions.Audience,
                 EncryptingCredentials = new EncryptingCredentials(jwtBearerOptions.TokenValidationParameters.TokenDecryptionKey, SecurityAlgorithms.Aes128KW, SecurityAlgorithms.Aes128CbcHmacSha256),
-                Expires = DateTime.UtcNow.AddMinutes(_configuration.GetValue<Int32>("JwtSettings:LifetimeInMinutes")),
-                Issuer = jwtBearerOptions.ClaimsIssuer,
+                Expires = DateTime.UtcNow.AddMinutes(jwtAuthenticationOptions.LifetimeInMinutes),
+                Issuer = jwtAuthenticationOptions.Issuer,
                 SigningCredentials = new SigningCredentials(jwtBearerOptions.TokenValidationParameters.IssuerSigningKey, SecurityAlgorithms.HmacSha256),
                 Subject = new ClaimsIdentity(new Claim[] {
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserName)

@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
 using EpubWebLibraryServer.Areas.User.Data;
+using EpubWebLibraryServer.Areas.User.Extensions;
 using EpubWebLibraryServer.Areas.User.Services;
 
 namespace EpubWebLibraryServer
@@ -26,33 +27,11 @@ namespace EpubWebLibraryServer
         {
             services.AddControllers();
 
-            if (!String.IsNullOrEmpty(Configuration.GetConnectionString("Postgresql")))
-            {
-                services.AddDbContext<UserDbContext>(options =>
-                    options.UseNpgsql(Configuration.GetConnectionString("Postgresql")));
-            }
-            else
-            {
-                services.AddDbContext<UserDbContext>(options =>
-                    options.UseSqlite(Configuration.GetConnectionString("Sqlite")));
-            }
+            Action<DbContextOptionsBuilder> dbContextOptionsAction = ChooseDatabaseProvider();
 
-            services.AddIdentity<ApplicationUser, ApplicationRole>(options => Configuration.Bind("IdentityOptions", options))
-                .AddEntityFrameworkStores<UserDbContext>();
-
-            services.AddAuthentication(options => 
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-                {
-                    Configuration.Bind("JwtBearerOptions", options);
-                    options.TokenValidationParameters.TokenDecryptionKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(Configuration.GetValue<string>("JwtSettings:EncryptingSecret")));
-                    options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.Default.GetBytes(Configuration.GetValue<string>("JwtSettings:SigningSecret")));
-                });
-            
-            services.AddSingleton<ITokenGenerator, JwtGenerator>();
+            var jwtAuthenticationOptions = new JwtAuthenticationOptions();
+            Configuration.Bind("JwtAuthenticationSettings", jwtAuthenticationOptions);
+            services.AddJwtAuthentication(dbContextOptionsAction, jwtAuthenticationOptions);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -74,6 +53,22 @@ namespace EpubWebLibraryServer
                     name: "default",
                     pattern: "{area}/{controller}/{action}");
             });
+        }
+
+        private Action<DbContextOptionsBuilder> ChooseDatabaseProvider()
+        {
+            Action<DbContextOptionsBuilder> dbContextOptionsAction;
+            if (!String.IsNullOrEmpty(Configuration.GetConnectionString("Postgresql")))
+            {
+                dbContextOptionsAction = options =>
+                    options.UseNpgsql(Configuration.GetConnectionString("Postgresql"));
+            }
+            else
+            {
+                dbContextOptionsAction = options =>
+                    options.UseSqlite(Configuration.GetConnectionString("Sqlite"));
+            }
+            return dbContextOptionsAction;
         }
     }
 }
