@@ -1,10 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Npgsql;
 using System;
+using System.Data.Common;
+using EpubWebLibraryServer.Areas.Library.Extensions;
 using EpubWebLibraryServer.Areas.User.Extensions;
 
 namespace EpubWebLibraryServer
@@ -22,9 +26,15 @@ namespace EpubWebLibraryServer
         {
             services.AddControllers();
 
-            Action<DbContextOptionsBuilder> dbContextOptionsAction = ChooseDatabaseProvider();
+            Action<DbContextOptionsBuilder> dbContextOptionsAction = ChooseUserDbContextOptionsAction();
 
             services.AddJwtAuthentication(dbContextOptionsAction, options => Configuration.Bind("JwtAuthenticationSettings", options));
+
+            RegisterDbProviderFactories();
+
+            services.AddEpubMetadataStorage(dbContextOptionsAction);
+            services.AddEpubBinaryDataDbStorage(dbContextOptionsAction, ChooseEpubStorageDbProviderFactory(), ChooseEpubStorageConnectionString());
+            services.AddEpubManager();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -48,7 +58,7 @@ namespace EpubWebLibraryServer
             });
         }
 
-        private Action<DbContextOptionsBuilder> ChooseDatabaseProvider()
+        private Action<DbContextOptionsBuilder> ChooseUserDbContextOptionsAction()
         {
             Action<DbContextOptionsBuilder> dbContextOptionsAction;
             if (!String.IsNullOrEmpty(Configuration.GetConnectionString("Postgresql")))
@@ -62,6 +72,40 @@ namespace EpubWebLibraryServer
                     options.UseSqlite(Configuration.GetConnectionString("Sqlite"));
             }
             return dbContextOptionsAction;
+        }
+
+        private void RegisterDbProviderFactories()
+        {
+            DbProviderFactories.RegisterFactory("Postgresql", NpgsqlFactory.Instance);
+            DbProviderFactories.RegisterFactory("Sqlite", SqliteFactory.Instance);
+        }
+
+        private DbProviderFactory ChooseEpubStorageDbProviderFactory()
+        {
+            DbProviderFactory dbProviderFactory;
+            if (!String.IsNullOrEmpty(Configuration.GetConnectionString("Postgresql")))
+            {
+                dbProviderFactory = DbProviderFactories.GetFactory("Postgresql");
+            }
+            else
+            {
+                dbProviderFactory = DbProviderFactories.GetFactory("Sqlite");
+            }
+            return dbProviderFactory;
+        }
+
+        private string ChooseEpubStorageConnectionString()
+        {
+            string connectionString;
+            if (!String.IsNullOrEmpty(Configuration.GetConnectionString("Postgresql")))
+            {
+                connectionString = Configuration.GetConnectionString("Postgresql");
+            }
+            else
+            {
+                connectionString = Configuration.GetConnectionString("Sqlite");
+            }
+            return connectionString;
         }
     }
 }

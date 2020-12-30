@@ -1,0 +1,41 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.IO;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using EpubWebLibraryServer.Areas.Library.Data;
+using EpubWebLibraryServer.Areas.Library.Services;
+
+namespace EpubWebLibraryServer.Areas.Library.Controllers
+{
+    [ApiController]
+    [Authorize]
+    [Area("Library")]
+    public class BinaryDataController : Controller
+    {
+        private readonly EpubManager _epubManager;
+
+        public BinaryDataController(EpubManager epubManager)
+        {
+            this._epubManager = epubManager;
+        }
+
+        [HttpPost]
+        [Route("/api/epub")]
+        public async Task<IActionResult> UploadEpub()
+        {
+            string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            EpubMetadata metadata = await _epubManager.AddEpubAsync(username, Request.Body);
+            return Ok(metadata);
+        }
+
+        [HttpGet]
+        [Route("/api/epub/{epubId}")]
+        public async Task<IActionResult> DownloadEpub(int epubId)
+        {
+            string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Stream binaryStream = await _epubManager.GetEpubAsync(epubId);
+            return File(binaryStream, "application/epub+zip");
+        }
+    }
+}
