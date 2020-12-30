@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using EpubWebLibraryServer.Areas.Library.Data;
 
@@ -14,6 +16,14 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         {
             this._epubMetadataDbContext = epubMetadataDbContext;
             this._epubBinaryDataStorage = epubBinaryDataStorage;
+        }
+
+        public async Task<EpubMetadata> GetEpubMetadataAsync(int epubId)
+        {
+            EpubMetadata metadata = await _epubMetadataDbContext.EpubMetadata
+                .Where(e => e.EpubId == epubId)
+                .FirstOrDefaultAsync();
+            return metadata;
         }
 
         public async Task<EpubMetadata> AddEpubAsync(string owner, Stream binaryStream)
