@@ -2,7 +2,6 @@
 
 ## Getting Started
 ```
-dotnet ef migrations add InitialMigration
-dotnet ef database update
+bash setup.sh
 dotnet run
 ```
