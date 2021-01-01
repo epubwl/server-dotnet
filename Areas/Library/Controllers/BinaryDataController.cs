@@ -22,7 +22,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         }
 
         [HttpPost]
-        [Route("/api/epub")]
+        [Route("/api/epubs")]
         public async Task<IActionResult> UploadEpub()
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -31,7 +31,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         }
 
         [HttpGet]
-        [Route("/api/epub/{epubId}")]
+        [Route("/api/epubs/{epubId}")]
         public async Task<IActionResult> DownloadEpub(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -49,7 +49,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         }
 
         [HttpGet]
-        [Route("/api/epub/metadata/{epubId}")]
+        [Route("/api/epubs/metadata/{epubId}")]
         public async Task<IActionResult> GetEpubMetadata(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);

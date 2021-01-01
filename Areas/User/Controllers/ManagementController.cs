@@ -21,7 +21,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
 
         [Authorize]
         [HttpPatch]
-        [Route("/api/[area]/password")]
+        [Route("/api/users/password")]
         public async Task<IActionResult> ChangePassword(PasswordChange passwordChange)
         {
             ApplicationUser user = await _userManager.FindByNameAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));

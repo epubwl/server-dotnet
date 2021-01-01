@@ -22,7 +22,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
         }
 
         [HttpPost]
-        [Route("/api/[area]")]
+        [Route("/api/users")]
         public async Task<IActionResult> Register([FromBody] UserCredentials userCredentials)
         {
             var user = new ApplicationUser()
@@ -38,7 +38,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
         }
 
         [HttpPost]
-        [Route("/api/[area]/[action]")]
+        [Route("/api/users/login")]
         public async Task<IActionResult> Login([FromBody] UserCredentials userCredentials)
         {
             ApplicationUser user = await _userManager.FindByNameAsync(userCredentials.Username);
