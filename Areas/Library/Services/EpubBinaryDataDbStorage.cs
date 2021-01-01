@@ -16,7 +16,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             this._connectionString = connectionString;
         }
 
-        public async Task<long> AddEpubAsync(int epubId, Stream binaryStream)
+        public async Task AddEpubAsync(int epubId, Stream binaryStream)
         {
             using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
             {
@@ -43,7 +43,6 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                     await dbCommand.ExecuteNonQueryAsync();
                 }
             }
-            return 0;
         }
         
         public async Task<Stream> GetEpubAsync(int epubId)
