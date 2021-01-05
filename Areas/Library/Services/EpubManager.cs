@@ -44,5 +44,12 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             Stream binaryStream = await _epubBinaryDataStorage.GetEpubAsync(epubId);
             return binaryStream;
         }
+
+        public async Task<EpubMetadata> ReplaceEpubAsync(int epubId, string owner, Stream binaryStream)
+        {
+            await _epubBinaryDataStorage.ReplaceEpubAsync(epubId, binaryStream);
+            EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
+            return metadata;
+        }
     }
 }

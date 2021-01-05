@@ -65,5 +65,34 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 }
             }
         }
+
+        public async Task ReplaceEpubAsync(int epubId, Stream binaryStream)
+        {
+            using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            {
+                dbConnection.ConnectionString = _connectionString;
+                dbConnection.Open();
+                using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
+                {
+                    byte[] binaryData;
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await binaryStream.CopyToAsync(memoryStream);
+                        binaryData = memoryStream.ToArray();
+                    }
+                    dbCommand.Connection = dbConnection;
+                    dbCommand.CommandText = "UPDATE EpubFiles SET BinaryData=@EpubFileBinaryData WHERE EpubId=@EpubId";
+                    DbParameter epubIdParameter = dbCommand.CreateParameter();
+                    epubIdParameter.ParameterName = "@EpubId";
+                    epubIdParameter.Value = epubId;
+                    DbParameter epubFileBinaryData = dbCommand.CreateParameter();
+                    epubFileBinaryData.ParameterName = "@EpubFileBinaryData";
+                    epubFileBinaryData.Value = binaryData;
+                    dbCommand.Parameters.Add(epubIdParameter);
+                    dbCommand.Parameters.Add(epubFileBinaryData);
+                    await dbCommand.ExecuteNonQueryAsync();
+                }
+            }
+        }
     }
 }

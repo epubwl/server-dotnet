@@ -23,7 +23,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
 
         [HttpPost]
         [Route("/api/epubs")]
-        public async Task<IActionResult> UploadEpub()
+        public async Task<IActionResult> UploadNewEpub()
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
             EpubMetadata metadata = await _epubManager.AddEpubAsync(username, Request.Body);
@@ -48,9 +48,9 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             return File(binaryStream, "application/epub+zip");
         }
 
-        [HttpGet]
-        [Route("/api/epubs/metadata/{epubId}")]
-        public async Task<IActionResult> GetEpubMetadata(int epubId)
+        [HttpPut]
+        [Route("/api/epubs/{epubId}")]
+        public async Task<IActionResult> UploadAndReplaceEpub(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
             EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
@@ -62,6 +62,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             {
                 return Unauthorized();
             }
+            metadata = await _epubManager.ReplaceEpubAsync(epubId, username, Request.Body);
             return Ok(metadata);
         }
     }

@@ -8,5 +8,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         Task AddEpubAsync(int epubId, Stream binaryStream);
         
         Task<Stream> GetEpubAsync(int epubId);
+
+        Task ReplaceEpubAsync(int epubId, Stream binaryStream);
     }
 }
