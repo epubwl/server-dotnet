@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
 using EpubWebLibraryServer.Areas.User.Data;
+using EpubWebLibraryServer.Areas.User.Models;
 using EpubWebLibraryServer.Areas.User.Services;
 
 namespace EpubWebLibraryServer.Areas.User.Extensions

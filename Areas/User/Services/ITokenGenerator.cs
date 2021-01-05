@@ -1,4 +1,4 @@
-using EpubWebLibraryServer.Areas.User.Data;
+using EpubWebLibraryServer.Areas.User.Models;
 
 namespace EpubWebLibraryServer.Areas.User.Services
 {

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace EpubWebLibraryServer.Areas.User.Data
+namespace EpubWebLibraryServer.Areas.User.Models
 {
     public class ApplicationRole : IdentityRole
     {

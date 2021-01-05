@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using EpubWebLibraryServer.Areas.User.Data;
+using EpubWebLibraryServer.Areas.User.Models;
 
 namespace EpubWebLibraryServer.Areas.User.Services
 {

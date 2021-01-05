@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using EpubWebLibraryServer.Areas.User.Models;
 
 namespace EpubWebLibraryServer.Areas.User.Data
 {
