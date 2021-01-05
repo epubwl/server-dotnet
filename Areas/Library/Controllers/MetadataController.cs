@@ -36,5 +36,23 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             }
             return Ok(metadata);
         }
+
+        [HttpPut]
+        [Route("/api/epubs/metadata")]
+        public async Task<IActionResult> UpdateEpubMetadata([FromBody] EpubMetadata newMetadata)
+        {
+            string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(newMetadata.EpubId);
+            if (metadata is null)
+            {
+                return NotFound();
+            }
+            if (!String.Equals(metadata.Owner, username))
+            {
+                return Unauthorized();
+            }
+            metadata = await _epubManager.UpdateEpubMetadataAsync(newMetadata);
+            return Ok(metadata);
+        }
     }
 }

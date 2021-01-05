@@ -27,13 +27,23 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             return metadata;
         }
 
+        public async Task<EpubMetadata> UpdateEpubMetadataAsync(EpubMetadata newMetadata)
+        {
+            EpubMetadata metadata = await _epubMetadataDbContext.EpubMetadata
+                .Where(e => e.EpubId == newMetadata.EpubId)
+                .FirstOrDefaultAsync();
+            _epubMetadataDbContext.Entry(metadata).CurrentValues.SetValues(newMetadata);
+            await _epubMetadataDbContext.SaveChangesAsync();
+            return newMetadata;
+        }
+
         public async Task<EpubMetadata> AddEpubAsync(string owner, Stream binaryStream)
         {
             var metadata = new EpubMetadata()
             {
                 Owner = owner
             };
-            _epubMetadataDbContext.Add(metadata);
+            await _epubMetadataDbContext.AddAsync(metadata);
             await _epubMetadataDbContext.SaveChangesAsync();
             await _epubBinaryDataStorage.AddEpubAsync(metadata.EpubId, binaryStream);
             return metadata;
