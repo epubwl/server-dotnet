@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EpubWebLibraryServer.Areas.Library.Data;
+using EpubWebLibraryServer.Areas.Library.Models;
 
 namespace EpubWebLibraryServer.Areas.Library.Services
 {

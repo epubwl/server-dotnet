@@ -1,6 +1,6 @@
 using System;
 
-namespace EpubWebLibraryServer.Areas.Library.Data
+namespace EpubWebLibraryServer.Areas.Library.Models
 {
     public class EpubMetadata
     {
