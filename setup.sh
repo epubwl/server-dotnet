@@ -1,3 +1,5 @@
+#!/bin/sh
+
 dotnet ef migrations add UserInitialMigration --context UserDbContext
 dotnet ef migrations add EpubMatadataInitialMigration --context EpubMetadataDbContext
 dotnet ef migrations add EpubFileInitialMigration --context EpubFileDbContext

@@ -2,6 +2,6 @@
 
 ## Getting Started
 ```
-bash setup.sh
+./setup.sh
 dotnet run
 ```
