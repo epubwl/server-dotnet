@@ -16,8 +16,8 @@ namespace EpubWebLibraryServer.Areas.User.Services
 
         public JwtGenerator(IOptionsMonitor<JwtAuthenticationOptions> jwtAuthenticationOptionsMonitor, IOptionsMonitor<JwtBearerOptions> jwtBearerOptionsMonitor)
         {
-            this._jwtAuthenticationOptionsMonitor = jwtAuthenticationOptionsMonitor;
-            this._jwtBearerOptionsMonitor = jwtBearerOptionsMonitor;
+            _jwtAuthenticationOptionsMonitor = jwtAuthenticationOptionsMonitor;
+            _jwtBearerOptionsMonitor = jwtBearerOptionsMonitor;
         }
 
         public string GenerateToken(ApplicationUser user)

@@ -16,7 +16,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
 
         public ManagementController(UserManager<ApplicationUser> userManager)
         {
-            this._userManager = userManager;
+            _userManager = userManager;
         }
 
         [Authorize]

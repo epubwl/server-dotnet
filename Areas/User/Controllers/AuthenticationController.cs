@@ -17,8 +17,8 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
         
         public AuthenticationController(ITokenGenerator tokenGenerator, UserManager<ApplicationUser> userManager)
         {
-            this._tokenGenerator = tokenGenerator;
-            this._userManager = userManager;
+            _tokenGenerator = tokenGenerator;
+            _userManager = userManager;
         }
 
         [HttpPost]

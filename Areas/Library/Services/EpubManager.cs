@@ -15,8 +15,8 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public EpubManager(EpubMetadataDbContext epubMetadataDbContext, IEpubBinaryDataStorage epubBinaryDataStorage)
         {
-            this._epubMetadataDbContext = epubMetadataDbContext;
-            this._epubBinaryDataStorage = epubBinaryDataStorage;
+            _epubMetadataDbContext = epubMetadataDbContext;
+            _epubBinaryDataStorage = epubBinaryDataStorage;
         }
 
         public async Task<EpubMetadata> GetEpubMetadataAsync(int epubId)

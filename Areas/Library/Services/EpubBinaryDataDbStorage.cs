@@ -13,8 +13,8 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public EpubBinaryDataDbStorage(DbProviderFactory dbProviderFactory, string connectionString)
         {
-            this._dbProviderFactory = dbProviderFactory;
-            this._connectionString = connectionString;
+            _dbProviderFactory = dbProviderFactory;
+            _connectionString = connectionString;
         }
 
         public async Task AddEpubAsync(int epubId, Stream binaryStream)

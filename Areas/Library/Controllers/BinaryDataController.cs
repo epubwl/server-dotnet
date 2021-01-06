@@ -18,7 +18,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
 
         public BinaryDataController(EpubManager epubManager)
         {
-            this._epubManager = epubManager;
+            _epubManager = epubManager;
         }
 
         [HttpPost]
