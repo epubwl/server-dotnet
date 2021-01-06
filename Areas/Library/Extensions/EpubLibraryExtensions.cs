@@ -22,7 +22,10 @@ namespace EpubWebLibraryServer.Areas.Library.Extensions
 
             services.AddDbContext<EpubCoverDbContext>(dbContextOptionsAction);
 
-            IEpubBinaryDataStorage epubBinaryDataStorage = new EpubBinaryDataDbStorage(dbProviderFactory, connectionString);
+            DbStreamFactory dbStreamFactory = new DbStreamFactory(dbProviderFactory, connectionString);
+            services.AddSingleton<DbStreamFactory>(dbStreamFactory);
+
+            IEpubBinaryDataStorage epubBinaryDataStorage = new EpubBinaryDataDbStorage(dbProviderFactory, connectionString, dbStreamFactory);
             services.AddSingleton<IEpubBinaryDataStorage>(epubBinaryDataStorage);
 
             return services;
