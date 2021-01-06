@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
 using System.Threading.Tasks;
@@ -18,55 +19,49 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task AddEpubAsync(int epubId, Stream binaryStream)
         {
-            using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            byte[] binaryData;
+            using (var memoryStream = new MemoryStream())
             {
-                dbConnection.ConnectionString = _connectionString;
-                dbConnection.Open();
-                using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
-                {
-                    byte[] binaryData;
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await binaryStream.CopyToAsync(memoryStream);
-                        binaryData = memoryStream.ToArray();
-                    }
-                    dbCommand.Connection = dbConnection;
-                    dbCommand.CommandText = "INSERT INTO EpubFiles (EpubId, BinaryData) VALUES (@EpubId, @EpubFileBinaryData)";
-                    DbParameter epubIdParameter = dbCommand.CreateParameter();
-                    epubIdParameter.ParameterName = "@EpubId";
-                    epubIdParameter.Value = epubId;
-                    DbParameter epubFileBinaryData = dbCommand.CreateParameter();
-                    epubFileBinaryData.ParameterName = "@EpubFileBinaryData";
-                    epubFileBinaryData.Value = binaryData;
-                    dbCommand.Parameters.Add(epubIdParameter);
-                    dbCommand.Parameters.Add(epubFileBinaryData);
-                    await dbCommand.ExecuteNonQueryAsync();
-                }
+                await binaryStream.CopyToAsync(memoryStream);
+                binaryData = memoryStream.ToArray();
             }
+            string commandText = "INSERT INTO EpubFiles (EpubId, BinaryData) VALUES (@EpubId, @EpubFileBinaryData)";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId,
+                ["@EpubFileBinaryData"] = binaryData
+            };
+            await ExecuteNonQueryAsync(commandText, parameters);
         }
         
         public async Task<Stream> GetEpubAsync(int epubId)
         {
-            using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            string commandText = "SELECT BinaryData FROM EpubFiles WHERE EpubId=@EpubId";
+            var parameters = new Dictionary<string, object>
             {
-                dbConnection.ConnectionString = _connectionString;
-                dbConnection.Open();
-                using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
-                {
-                    dbCommand.Connection = dbConnection;
-                    dbCommand.CommandText = "SELECT BinaryData FROM EpubFiles WHERE EpubId=@EpubId";
-                    DbParameter epubIdParameter = dbCommand.CreateParameter();
-                    epubIdParameter.ParameterName = "@EpubId";
-                    epubIdParameter.Value = epubId;
-                    dbCommand.Parameters.Add(epubIdParameter);
-                    DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
-                    await dbDataReader.ReadAsync();
-                    return dbDataReader.GetStream(0);
-                }
-            }
+                ["@EpubId"] = epubId
+            };
+            return await ExecuteStreamAsync(commandText, parameters);
         }
 
         public async Task ReplaceEpubAsync(int epubId, Stream binaryStream)
+        {
+            byte[] binaryData;
+            using (var memoryStream = new MemoryStream())
+            {
+                await binaryStream.CopyToAsync(memoryStream);
+                binaryData = memoryStream.ToArray();
+            }
+            string commandText = "UPDATE EpubFiles SET BinaryData=@EpubFileBinaryData WHERE EpubId=@EpubId";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId,
+                ["@EpubFileBinaryData"] = binaryData
+            };
+            await ExecuteNonQueryAsync(commandText, parameters);
+        }
+
+        private async Task ExecuteNonQueryAsync(string commandText, IDictionary<string, object> parameters)
         {
             using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
             {
@@ -74,23 +69,40 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 dbConnection.Open();
                 using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
                 {
-                    byte[] binaryData;
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await binaryStream.CopyToAsync(memoryStream);
-                        binaryData = memoryStream.ToArray();
-                    }
                     dbCommand.Connection = dbConnection;
-                    dbCommand.CommandText = "UPDATE EpubFiles SET BinaryData=@EpubFileBinaryData WHERE EpubId=@EpubId";
-                    DbParameter epubIdParameter = dbCommand.CreateParameter();
-                    epubIdParameter.ParameterName = "@EpubId";
-                    epubIdParameter.Value = epubId;
-                    DbParameter epubFileBinaryData = dbCommand.CreateParameter();
-                    epubFileBinaryData.ParameterName = "@EpubFileBinaryData";
-                    epubFileBinaryData.Value = binaryData;
-                    dbCommand.Parameters.Add(epubIdParameter);
-                    dbCommand.Parameters.Add(epubFileBinaryData);
+                    dbCommand.CommandText = commandText;
+                    foreach (KeyValuePair<string, object> parameter in parameters)
+                    {
+                        DbParameter dbParameter = dbCommand.CreateParameter();
+                        dbParameter.ParameterName = parameter.Key;
+                        dbParameter.Value = parameter.Value;
+                        dbCommand.Parameters.Add(dbParameter);
+                    }
                     await dbCommand.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        private async Task<Stream> ExecuteStreamAsync(string commandText, IDictionary<string, object> parameters)
+        {
+            using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            {
+                dbConnection.ConnectionString = _connectionString;
+                dbConnection.Open();
+                using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
+                {
+                    dbCommand.Connection = dbConnection;
+                    dbCommand.CommandText = commandText;
+                    foreach (KeyValuePair<string, object> parameter in parameters)
+                    {
+                        DbParameter dbParameter = dbCommand.CreateParameter();
+                        dbParameter.ParameterName = parameter.Key;
+                        dbParameter.Value = parameter.Value;
+                        dbCommand.Parameters.Add(dbParameter);
+                    }
+                    DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
+                    await dbDataReader.ReadAsync();
+                    return dbDataReader.GetStream(0);
                 }
             }
         }
