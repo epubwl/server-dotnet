@@ -25,7 +25,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 await binaryStream.CopyToAsync(memoryStream);
                 binaryData = memoryStream.ToArray();
             }
-            string commandText = "INSERT INTO EpubFiles (EpubId, BinaryData) VALUES (@EpubId, @EpubFileBinaryData)";
+            string commandText = "INSERT INTO \"EpubFiles\" (\"EpubId\", \"BinaryData\") VALUES (@EpubId, @EpubFileBinaryData)";
             var parameters = new Dictionary<string, object>
             {
                 ["@EpubId"] = epubId,
@@ -36,7 +36,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         
         public async Task<Stream> GetEpubAsync(int epubId)
         {
-            string commandText = "SELECT BinaryData FROM EpubFiles WHERE EpubId=@EpubId";
+            string commandText = "SELECT \"BinaryData\" FROM \"EpubFiles\" WHERE \"EpubId\"=@EpubId";
             var parameters = new Dictionary<string, object>
             {
                 ["@EpubId"] = epubId
@@ -52,7 +52,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 await binaryStream.CopyToAsync(memoryStream);
                 binaryData = memoryStream.ToArray();
             }
-            string commandText = "UPDATE EpubFiles SET BinaryData=@EpubFileBinaryData WHERE EpubId=@EpubId";
+            string commandText = "UPDATE \"EpubFiles\" SET \"BinaryData\"=@EpubFileBinaryData WHERE \"EpubId\"=@EpubId";
             var parameters = new Dictionary<string, object>
             {
                 ["@EpubId"] = epubId,
@@ -63,7 +63,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task DeleteEpubAsync(int epubId)
         {
-            string commandText = "DELETE FROM EpubFiles WHERE EpubId=@EpubId";
+            string commandText = "DELETE FROM \"EpubFiles\" WHERE \"EpubId\"=@EpubId";
             var parameters = new Dictionary<string, object>
             {
                 ["@EpubId"] = epubId
@@ -73,7 +73,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task DeleteCoverAsync(int epubId)
         {
-            string commandText = "DELETE FROM EpubCovers WHERE EpubId=@EpubId";
+            string commandText = "DELETE FROM \"EpubCovers\" WHERE \"EpubId\"=@EpubId";
             var parameters = new Dictionary<string, object>
             {
                 ["@EpubId"] = epubId
