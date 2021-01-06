@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
 using System.Threading.Tasks;
-using EpubWebLibraryServer.Areas.Library.Services;
+using EpubWebLibraryServer.Areas.Library.Models;
 
 namespace EpubWebLibraryServer.Areas.Library.Services
 {
@@ -12,13 +12,10 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         private readonly string _connectionString;
 
-        private readonly DbStreamFactory _dbStreamFactory;
-
-        public EpubBinaryDataDbStorage(DbProviderFactory dbProviderFactory, string connectionString, DbStreamFactory dbStreamFactory)
+        public EpubBinaryDataDbStorage(DbProviderFactory dbProviderFactory, string connectionString)
         {
             _dbProviderFactory = dbProviderFactory;
             _connectionString = connectionString;
-            _dbStreamFactory = dbStreamFactory;
         }
 
         public async Task AddEpubAsync(int epubId, Stream binaryStream)
@@ -107,9 +104,31 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             }
         }
 
-        private async Task<Stream> ExecuteStreamAsync(string commandText, IDictionary<string, object> parameters)
+        private async Task<DbStream> ExecuteStreamAsync(string commandText, IDictionary<string, object> parameters)
         {
-            return await _dbStreamFactory.CreateDbStreamAsync(commandText, parameters);
+            DbConnection dbConnection = _dbProviderFactory.CreateConnection();
+            dbConnection.ConnectionString = _connectionString;
+            await dbConnection.OpenAsync();
+
+            DbCommand dbCommand = _dbProviderFactory.CreateCommand();
+            dbCommand.CommandText = commandText;
+            dbCommand.Connection = dbConnection;
+
+            foreach (KeyValuePair<string, object> parameter in parameters)
+            {
+                DbParameter dbParameter = dbCommand.CreateParameter();
+                dbParameter.ParameterName = parameter.Key;
+                dbParameter.Value = parameter.Value;
+                dbCommand.Parameters.Add(dbParameter);
+            }
+
+            DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
+
+            Stream stream = await dbDataReader.ReadAsync() && !(await dbDataReader.IsDBNullAsync(0))
+                ? dbDataReader.GetStream(0)
+                : Stream.Null;
+
+            return new DbStream(dbConnection, dbCommand, dbDataReader, stream);
         }
     }
 }
