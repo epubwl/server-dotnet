@@ -65,5 +65,23 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             metadata = await _epubManager.ReplaceEpubAsync(epubId, username, Request.Body);
             return Ok(metadata);
         }
+
+        [HttpDelete]
+        [Route("/api/epubs/{epubId}")]
+        public async Task<IActionResult> DeleteEpub(int epubId)
+        {
+            string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            if (metadata is null)
+            {
+                return NotFound();
+            }
+            if (!String.Equals(metadata.Owner, username))
+            {
+                return Unauthorized();
+            }
+            metadata = await _epubManager.DeleteEpubAsync(epubId);
+            return Ok(metadata);
+        }
     }
 }

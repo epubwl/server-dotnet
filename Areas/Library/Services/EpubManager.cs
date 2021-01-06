@@ -29,9 +29,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<EpubMetadata> UpdateEpubMetadataAsync(EpubMetadata newMetadata)
         {
-            EpubMetadata metadata = await _epubMetadataDbContext.EpubMetadata
-                .Where(e => e.EpubId == newMetadata.EpubId)
-                .FirstOrDefaultAsync();
+            EpubMetadata metadata = await GetEpubMetadataAsync(newMetadata.EpubId);
             _epubMetadataDbContext.Entry(metadata).CurrentValues.SetValues(newMetadata);
             await _epubMetadataDbContext.SaveChangesAsync();
             return newMetadata;
@@ -59,6 +57,16 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         {
             await _epubBinaryDataStorage.ReplaceEpubAsync(epubId, binaryStream);
             EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
+            return metadata;
+        }
+
+        public async Task<EpubMetadata> DeleteEpubAsync(int epubId)
+        {
+            EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
+            _epubMetadataDbContext.Remove(metadata);
+            await _epubMetadataDbContext.SaveChangesAsync();
+            await _epubBinaryDataStorage.DeleteEpubAsync(epubId);
+            await _epubBinaryDataStorage.DeleteCoverAsync(epubId);
             return metadata;
         }
     }

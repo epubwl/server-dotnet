@@ -61,6 +61,26 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             await ExecuteNonQueryAsync(commandText, parameters);
         }
 
+        public async Task DeleteEpubAsync(int epubId)
+        {
+            string commandText = "DELETE FROM EpubFiles WHERE EpubId=@EpubId";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId
+            };
+            await ExecuteNonQueryAsync(commandText, parameters);
+        }
+
+        public async Task DeleteCoverAsync(int epubId)
+        {
+            string commandText = "DELETE FROM EpubCovers WHERE EpubId=@EpubId";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId
+            };
+            await ExecuteNonQueryAsync(commandText, parameters);
+        }
+
         private async Task ExecuteNonQueryAsync(string commandText, IDictionary<string, object> parameters)
         {
             using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())

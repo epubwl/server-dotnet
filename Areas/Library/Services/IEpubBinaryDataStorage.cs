@@ -10,5 +10,9 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         Task<Stream> GetEpubAsync(int epubId);
 
         Task ReplaceEpubAsync(int epubId, Stream binaryStream);
+
+        Task DeleteEpubAsync(int epubId);
+
+        Task DeleteCoverAsync(int epubId);
     }
 }
