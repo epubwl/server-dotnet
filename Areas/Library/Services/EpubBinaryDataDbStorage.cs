@@ -108,7 +108,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
             {
                 dbConnection.ConnectionString = _connectionString;
-                dbConnection.Open();
+                await dbConnection.OpenAsync();
                 using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
                 {
                     dbCommand.Connection = dbConnection;
@@ -121,8 +121,14 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                         dbCommand.Parameters.Add(dbParameter);
                     }
                     DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
-                    await dbDataReader.ReadAsync();
-                    return dbDataReader.GetStream(0);
+                    if (await dbDataReader.ReadAsync())
+                    {
+                        if (!(await dbDataReader.IsDBNullAsync(0)))
+                        {
+                            return dbDataReader.GetStream(0);
+                        }
+                    }
+                    return Stream.Null;
                 }
             }
         }
