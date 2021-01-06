@@ -37,14 +37,17 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<EpubMetadata> AddEpubAsync(string owner, Stream binaryStream)
         {
-            var metadata = new EpubMetadata()
+            using (binaryStream)
             {
-                Owner = owner
-            };
-            await _epubMetadataDbContext.AddAsync(metadata);
-            await _epubMetadataDbContext.SaveChangesAsync();
-            await _epubBinaryDataStorage.AddEpubAsync(metadata.EpubId, binaryStream);
-            return metadata;
+                var metadata = new EpubMetadata()
+                {
+                    Owner = owner
+                };
+                await _epubMetadataDbContext.AddAsync(metadata);
+                await _epubMetadataDbContext.SaveChangesAsync();
+                await _epubBinaryDataStorage.AddEpubAsync(metadata.EpubId, binaryStream);
+                return metadata;
+            }
         }
 
         public async Task<Stream> GetEpubAsync(int epubId)
@@ -55,9 +58,12 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<EpubMetadata> ReplaceEpubAsync(int epubId, string owner, Stream binaryStream)
         {
-            await _epubBinaryDataStorage.ReplaceEpubAsync(epubId, binaryStream);
-            EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
-            return metadata;
+            using (binaryStream)
+            {
+                await _epubBinaryDataStorage.ReplaceEpubAsync(epubId, binaryStream);
+                EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
+                return metadata;
+            }
         }
 
         public async Task<EpubMetadata> DeleteEpubAsync(int epubId)
