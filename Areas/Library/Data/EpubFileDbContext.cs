@@ -5,12 +5,12 @@ namespace EpubWebLibraryServer.Areas.Library.Data
 {
     public class EpubFileDbContext : DbContext
     {
-        public DbSet<EpubFile> EpubFiles { get; set; }
-
         public EpubFileDbContext(DbContextOptions<EpubFileDbContext> options)
             : base(options)
         {
         }
+
+        public DbSet<EpubFile> EpubFiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
