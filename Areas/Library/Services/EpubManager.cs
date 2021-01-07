@@ -58,7 +58,10 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 {
                     await UpdateEpubMetadataAsync(metadata);
                 }
-                await _epubBinaryDataStorage.AddCoverAsync(epubId, coverStream, coverMimetype);
+                using (coverStream)
+                {
+                    await _epubBinaryDataStorage.AddCoverAsync(epubId, coverStream, coverMimetype);
+                }
                 return metadata;
             }
         }
