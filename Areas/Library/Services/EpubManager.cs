@@ -40,7 +40,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<EpubMetadata> AddEpubAsync(string owner, Stream binaryStream)
         {
-            using (binaryStream)
+            await using (binaryStream)
             {
                 var metadata = new EpubMetadata()
                 {
@@ -51,18 +51,20 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 int epubId = metadata.EpubId;
                 await _epubBinaryDataStorage.AddEpubAsync(epubId, binaryStream);
                 
-                Stream epubStream = await GetEpubAsync(epubId);
-                Stream coverStream;
-                string coverMimetype;
-                if (_epubMetadataParser.TryParse(epubStream, in metadata, out coverStream, out coverMimetype))
+                await using (Stream epubStream = await GetEpubAsync(epubId))
                 {
-                    await UpdateEpubMetadataAsync(metadata);
+                    Stream coverStream;
+                    string coverMimetype;
+                    if (_epubMetadataParser.TryParse(epubStream, in metadata, out coverStream, out coverMimetype))
+                    {
+                        await UpdateEpubMetadataAsync(metadata);
+                    }
+                    await using (coverStream)
+                    {
+                        await _epubBinaryDataStorage.AddCoverAsync(epubId, coverStream, coverMimetype);
+                    }
+                    return metadata;
                 }
-                using (coverStream)
-                {
-                    await _epubBinaryDataStorage.AddCoverAsync(epubId, coverStream, coverMimetype);
-                }
-                return metadata;
             }
         }
 
@@ -74,7 +76,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<EpubMetadata> ReplaceEpubAsync(int epubId, string owner, Stream binaryStream)
         {
-            using (binaryStream)
+            await using (binaryStream)
             {
                 await _epubBinaryDataStorage.ReplaceEpubAsync(epubId, binaryStream);
                 EpubMetadata metadata = await GetEpubMetadataAsync(epubId);

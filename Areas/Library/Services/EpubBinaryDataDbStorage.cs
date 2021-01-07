@@ -21,7 +21,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         public async Task AddEpubAsync(int epubId, Stream binaryStream)
         {
             byte[] binaryData;
-            using (var memoryStream = new MemoryStream())
+            await using (var memoryStream = new MemoryStream())
             {
                 await binaryStream.CopyToAsync(memoryStream);
                 binaryData = memoryStream.ToArray();
@@ -48,7 +48,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         public async Task ReplaceEpubAsync(int epubId, Stream binaryStream)
         {
             byte[] binaryData;
-            using (var memoryStream = new MemoryStream())
+            await using (var memoryStream = new MemoryStream())
             {
                 await binaryStream.CopyToAsync(memoryStream);
                 binaryData = memoryStream.ToArray();
@@ -75,7 +75,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         public async Task AddCoverAsync(int epubId, Stream binaryStream, string mimetype)
         {
             byte[] binaryData;
-            using (var memoryStream = new MemoryStream())
+            await using (var memoryStream = new MemoryStream())
             {
                 await binaryStream.CopyToAsync(memoryStream);
                 binaryData = memoryStream.ToArray();
@@ -102,11 +102,11 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         private async Task ExecuteNonQueryAsync(string commandText, IDictionary<string, object> parameters)
         {
-            using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            await using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
             {
                 dbConnection.ConnectionString = _connectionString;
                 dbConnection.Open();
-                using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
+                await using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
                 {
                     dbCommand.Connection = dbConnection;
                     dbCommand.CommandText = commandText;
