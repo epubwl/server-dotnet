@@ -72,6 +72,24 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             await ExecuteNonQueryAsync(commandText, parameters);
         }
 
+        public async Task AddCoverAsync(int epubId, Stream binaryStream, string mimetype)
+        {
+            byte[] binaryData;
+            using (var memoryStream = new MemoryStream())
+            {
+                await binaryStream.CopyToAsync(memoryStream);
+                binaryData = memoryStream.ToArray();
+            }
+            string commandText = "INSERT INTO \"EpubCovers\" (\"EpubId\", \"BinaryData\", \"Mimetype\") VALUES (@EpubId, @EpubCoverBinaryData, @EpubCoverMimetype)";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId,
+                ["@EpubCoverBinaryData"] = binaryData,
+                ["@EpubCoverMimetype"] = mimetype
+            };
+            await ExecuteNonQueryAsync(commandText, parameters);
+        }
+
         public async Task DeleteCoverAsync(int epubId)
         {
             string commandText = "DELETE FROM \"EpubCovers\" WHERE \"EpubId\"=@EpubId";

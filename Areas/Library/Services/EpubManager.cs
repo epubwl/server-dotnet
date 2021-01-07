@@ -13,10 +13,13 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         
         private readonly IEpubBinaryDataStorage _epubBinaryDataStorage;
 
-        public EpubManager(EpubMetadataDbContext epubMetadataDbContext, IEpubBinaryDataStorage epubBinaryDataStorage)
+        private readonly EpubMetadataParser _epubMetadataParser;
+
+        public EpubManager(EpubMetadataDbContext epubMetadataDbContext, IEpubBinaryDataStorage epubBinaryDataStorage, EpubMetadataParser epubMetadataParser)
         {
             _epubMetadataDbContext = epubMetadataDbContext;
             _epubBinaryDataStorage = epubBinaryDataStorage;
+            _epubMetadataParser = epubMetadataParser;
         }
 
         public async Task<EpubMetadata> GetEpubMetadataAsync(int epubId)
@@ -45,7 +48,17 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 };
                 await _epubMetadataDbContext.AddAsync(metadata);
                 await _epubMetadataDbContext.SaveChangesAsync();
-                await _epubBinaryDataStorage.AddEpubAsync(metadata.EpubId, binaryStream);
+                int epubId = metadata.EpubId;
+                await _epubBinaryDataStorage.AddEpubAsync(epubId, binaryStream);
+                
+                Stream epubStream = await GetEpubAsync(epubId);
+                Stream coverStream;
+                string coverMimetype;
+                if (_epubMetadataParser.TryParse(epubStream, in metadata, out coverStream, out coverMimetype))
+                {
+                    await UpdateEpubMetadataAsync(metadata);
+                }
+                await _epubBinaryDataStorage.AddCoverAsync(epubId, coverStream, coverMimetype);
                 return metadata;
             }
         }

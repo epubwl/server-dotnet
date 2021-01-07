@@ -32,6 +32,8 @@ namespace EpubWebLibraryServer.Areas.Library.Extensions
         {
             services.AddScoped<EpubManager>();
 
+            services.AddSingleton<EpubMetadataParser>();
+
             return services;
         }
     }
