@@ -16,12 +16,15 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
     {
         private readonly EpubManager _epubManager;
 
+        private const string _epubMimetype = "application/epub+zip";
+
         public BinaryDataController(EpubManager epubManager)
         {
             _epubManager = epubManager;
         }
 
         [HttpPost]
+        [Consumes(_epubMimetype)]
         [Route("/api/epubs")]
         public async Task<IActionResult> UploadNewEpub()
         {
@@ -45,10 +48,11 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
                 return Unauthorized();
             }
             Stream binaryStream = await _epubManager.GetEpubAsync(epubId);
-            return File(binaryStream, "application/epub+zip");
+            return File(binaryStream, _epubMimetype);
         }
 
         [HttpPut]
+        [Consumes(_epubMimetype)]
         [Route("/api/epubs/{epubId}")]
         public async Task<IActionResult> UploadAndReplaceEpub(int epubId)
         {
