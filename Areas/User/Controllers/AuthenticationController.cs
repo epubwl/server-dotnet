@@ -49,7 +49,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
             PasswordVerificationResult result = _userManager.PasswordHasher.VerifyHashedPassword(user, user.PasswordHash, userCredentials.Password);
             if (result != PasswordVerificationResult.Success)
             {
-                return Unauthorized();
+                return BadRequest();
             }
             return Ok(new { token = _tokenGenerator.GenerateToken(user) });
         }
