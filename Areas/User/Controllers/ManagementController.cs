@@ -34,7 +34,7 @@ namespace EpubWebLibraryServer.Areas.User.Controllers
             {
                 return BadRequest();
             }
-            return Ok(null);
+            return NoContent();
         }
     }   
 }
