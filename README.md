@@ -1,4 +1,4 @@
-# EPUB Web Library (.NET Server)
+# EPUB Web Library (ASP.NET Core Server)
 
 ## Getting Started
 ```
