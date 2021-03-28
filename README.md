@@ -1,4 +1,4 @@
-# epub-wl-server-dotnet
+# EPUB Web Library (.NET Server)
 
 ## Getting Started
 ```
