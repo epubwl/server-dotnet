@@ -51,6 +51,10 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             {
                 return Unauthorized();
             }
+            if (!String.Equals(metadata.Owner, newMetadata.Owner))
+            {
+                return BadRequest();
+            }
             metadata = await _epubManager.UpdateEpubMetadataAsync(newMetadata);
             return Ok(metadata);
         }
