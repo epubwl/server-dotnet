@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -86,12 +87,24 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<EpubMetadata> DeleteEpubAsync(int epubId)
         {
+            await _epubBinaryDataStorage.DeleteCoverAsync(epubId);
+            await _epubBinaryDataStorage.DeleteEpubAsync(epubId);
             EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
             _epubMetadataDbContext.Remove(metadata);
             await _epubMetadataDbContext.SaveChangesAsync();
-            await _epubBinaryDataStorage.DeleteEpubAsync(epubId);
-            await _epubBinaryDataStorage.DeleteCoverAsync(epubId);
             return metadata;
+        }
+
+        public async Task DeleteAllEpubsFromOwner(string owner)
+        {
+            List<int> epubIds = await _epubMetadataDbContext.EpubMetadata
+                .Where(e => e.Owner == owner)
+                .Select(e => e.EpubId)
+                .ToListAsync();
+            foreach (int epubId in epubIds)
+            {
+                await DeleteEpubAsync(epubId);
+            }
         }
     }
 }

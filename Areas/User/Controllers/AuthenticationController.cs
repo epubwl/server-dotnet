@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using EpubWebLibraryServer.Areas.User.Data;
 using EpubWebLibraryServer.Areas.User.Models;
 using EpubWebLibraryServer.Areas.User.Services;
 
