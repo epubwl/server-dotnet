@@ -15,6 +15,12 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         Task AddCoverAsync(int epubId, Stream binaryStream, string mimetype);
 
+        Task<Stream> GetCoverAsync(int epubId);
+
+        Task<string> GetCoverMimetypeAsync(int epubId);
+
+        Task ReplaceCoverAsync(int epubId, Stream binaryStream, string mimetype);
+
         Task DeleteCoverAsync(int epubId);
     }
 }

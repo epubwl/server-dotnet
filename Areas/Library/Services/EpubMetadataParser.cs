@@ -8,7 +8,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         public bool TryParse(Stream epubStream, in EpubMetadata metadata, out Stream coverStream, out string coverMimetype)
         {
             coverStream = Stream.Null;
-            coverMimetype = "";
+            coverMimetype = "application/octet-stream";
             return false;
         }
     }

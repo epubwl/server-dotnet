@@ -75,7 +75,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             return binaryStream;
         }
 
-        public async Task<EpubMetadata> ReplaceEpubAsync(int epubId, string owner, Stream binaryStream)
+        public async Task<EpubMetadata> ReplaceEpubAsync(int epubId, Stream binaryStream)
         {
             await using (binaryStream)
             {
@@ -105,6 +105,21 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             {
                 await DeleteEpubAsync(epubId);
             }
+        }
+
+        public async Task<Stream> GetEpubCoverAsync(int epubId)
+        {
+            return await _epubBinaryDataStorage.GetCoverAsync(epubId);
+        }
+
+        public async Task<string> GetEpubCoverMimetypeAsync(int epubId)
+        {
+            return await _epubBinaryDataStorage.GetCoverMimetypeAsync(epubId);
+        }
+
+        public async Task ReplaceEpubCoverAsync(int epubId, Stream binaryStream, string mimetype)
+        {
+            await _epubBinaryDataStorage.ReplaceCoverAsync(epubId, binaryStream, mimetype);
         }
     }
 }

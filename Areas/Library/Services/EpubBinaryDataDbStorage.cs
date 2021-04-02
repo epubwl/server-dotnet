@@ -90,6 +90,65 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             await ExecuteNonQueryAsync(commandText, parameters);
         }
 
+        public async Task<Stream> GetCoverAsync(int epubId)
+        {
+            string commandText = "SELECT \"BinaryData\", \"Mimetype\" FROM \"EpubCovers\" WHERE \"EpubId\"=@EpubId";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId
+            };
+            return await ExecuteStreamAsync(commandText, parameters);
+        }
+
+        public async Task<string> GetCoverMimetypeAsync(int epubId)
+        {
+            string commandText = "SELECT \"Mimetype\" FROM \"EpubCovers\" WHERE \"EpubId\"=@EpubId";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId
+            };
+            string mimetype;
+            await using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            {
+                dbConnection.ConnectionString = _connectionString;
+                dbConnection.Open();
+                await using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
+                {
+                    dbCommand.Connection = dbConnection;
+                    dbCommand.CommandText = commandText;
+                    foreach (KeyValuePair<string, object> parameter in parameters)
+                    {
+                        DbParameter dbParameter = dbCommand.CreateParameter();
+                        dbParameter.ParameterName = parameter.Key;
+                        dbParameter.Value = parameter.Value;
+                        dbCommand.Parameters.Add(dbParameter);
+                    }
+                    DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
+                    await dbDataReader.ReadAsync();
+                    mimetype = dbDataReader.GetString(0);
+                }
+            }
+            return mimetype;
+        }
+
+        public async Task ReplaceCoverAsync(int epubId, Stream binaryStream, string mimetype)
+        {
+            byte[] binaryData;
+            await using (var memoryStream = new MemoryStream())
+            {
+                await binaryStream.CopyToAsync(memoryStream);
+                binaryData = memoryStream.ToArray();
+            }
+            string commandText = "UPDATE \"EpubCovers\" SET \"BinaryData\"=@EpubCoverBinaryData, \"Mimetype\"=@EpubCoverMimetype WHERE \"EpubId\"=@EpubId";
+            var parameters = new Dictionary<string, object>
+            {
+                ["@EpubId"] = epubId,
+                ["@EpubCoverBinaryData"] = binaryData,
+                ["@EpubCoverMimetype"] = mimetype
+            };
+            await ExecuteNonQueryAsync(commandText, parameters);
+        }
+
         public async Task DeleteCoverAsync(int epubId)
         {
             string commandText = "DELETE FROM \"EpubCovers\" WHERE \"EpubId\"=@EpubId";

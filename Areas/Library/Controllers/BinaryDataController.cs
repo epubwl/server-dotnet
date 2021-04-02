@@ -66,7 +66,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             {
                 return Unauthorized();
             }
-            metadata = await _epubManager.ReplaceEpubAsync(epubId, username, Request.Body);
+            metadata = await _epubManager.ReplaceEpubAsync(epubId, Request.Body);
             return Ok(metadata);
         }
 
@@ -86,6 +86,44 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             }
             metadata = await _epubManager.DeleteEpubAsync(epubId);
             return Ok(metadata);
+        }
+
+        [HttpGet]
+        [Route("/api/epubs/cover/{epubId}")]
+        public async Task<IActionResult> GetCover(int epubId)
+        {
+            string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            if (metadata is null)
+            {
+                return NotFound();
+            }
+            if (!String.Equals(metadata.Owner, username))
+            {
+                return Unauthorized();
+            }
+            string mimetype = await _epubManager.GetEpubCoverMimetypeAsync(epubId);
+            Stream binaryStream = await _epubManager.GetEpubCoverAsync(epubId);
+            return File(binaryStream, mimetype);
+        }
+
+        [HttpPut]
+        [Consumes("image/gif", new string[] { "image/jpeg", "image/png", "image/svg+xml" })]
+        [Route("/api/epubs/cover/{epubId}")]
+        public async Task<IActionResult> UploadAndReplaceEpubCover(int epubId)
+        {
+            string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            if (metadata is null)
+            {
+                return NotFound();
+            }
+            if (!String.Equals(metadata.Owner, username))
+            {
+                return Unauthorized();
+            }
+            await _epubManager.ReplaceEpubCoverAsync(epubId, Request.Body, HttpContext.Request.ContentType);
+            return NoContent();
         }
     }
 }
