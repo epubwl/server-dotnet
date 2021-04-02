@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace EpubWebLibraryServer.Areas.Library.Models
 {
@@ -7,6 +8,8 @@ namespace EpubWebLibraryServer.Areas.Library.Models
         public int EpubId { get; set; }
 
         public string Owner { get; set; }
+
+        public ICollection<string> Tags { get; set; }
 
         public string Contributors { get; set; }
 
