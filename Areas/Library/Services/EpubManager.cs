@@ -121,5 +121,13 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         {
             await _epubBinaryDataStorage.ReplaceCoverAsync(epubId, binaryStream, mimetype);
         }
+
+        public async Task<IList<EpubMetadata>> Search(string owner)
+        {
+            List<EpubMetadata> metadatas = await _epubMetadataDbContext.EpubMetadata
+                .Where(e => e.Owner == owner)
+                .ToListAsync();
+            return metadatas;
+        }
     }
 }
