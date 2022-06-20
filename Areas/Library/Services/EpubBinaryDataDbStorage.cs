@@ -183,29 +183,32 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         private async Task<DbStream> ExecuteStreamAsync(string commandText, IDictionary<string, object> parameters)
         {
-            DbConnection dbConnection = _dbProviderFactory.CreateConnection();
-            dbConnection.ConnectionString = _connectionString;
-            await dbConnection.OpenAsync();
-
-            DbCommand dbCommand = _dbProviderFactory.CreateCommand();
-            dbCommand.CommandText = commandText;
-            dbCommand.Connection = dbConnection;
-
-            foreach (KeyValuePair<string, object> parameter in parameters)
+            await using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
             {
-                DbParameter dbParameter = dbCommand.CreateParameter();
-                dbParameter.ParameterName = parameter.Key;
-                dbParameter.Value = parameter.Value;
-                dbCommand.Parameters.Add(dbParameter);
+                dbConnection.ConnectionString = _connectionString;
+                await dbConnection.OpenAsync();
+
+                DbCommand dbCommand = _dbProviderFactory.CreateCommand();
+                dbCommand.CommandText = commandText;
+                dbCommand.Connection = dbConnection;
+
+                foreach (KeyValuePair<string, object> parameter in parameters)
+                {
+                    DbParameter dbParameter = dbCommand.CreateParameter();
+                    dbParameter.ParameterName = parameter.Key;
+                    dbParameter.Value = parameter.Value;
+                    dbCommand.Parameters.Add(dbParameter);
+                }
+
+                DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
+
+                Stream stream = await dbDataReader.ReadAsync() && !(await dbDataReader.IsDBNullAsync(0))
+                    ? dbDataReader.GetStream(0)
+                    : Stream.Null;
+
+                return new DbStream(dbConnection, dbCommand, dbDataReader, stream);
             }
-
-            DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
-
-            Stream stream = await dbDataReader.ReadAsync() && !(await dbDataReader.IsDBNullAsync(0))
-                ? dbDataReader.GetStream(0)
-                : Stream.Null;
-
-            return new DbStream(dbConnection, dbCommand, dbDataReader, stream);
+            
         }
     }
 }
