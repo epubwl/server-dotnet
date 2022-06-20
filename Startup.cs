@@ -24,6 +24,17 @@ namespace EpubWebLibraryServer
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "CorsAllowAll",
+                                policy  =>
+                                {
+                                    policy.AllowAnyOrigin()
+                                        .AllowAnyHeader()
+                                        .AllowAnyMethod();
+                                });
+            });
+
             services.AddControllers();
 
             Action<DbContextOptionsBuilder> dbContextOptionsAction = ChooseUserDbContextOptionsAction();
@@ -45,6 +56,8 @@ namespace EpubWebLibraryServer
             }
 
             app.UseRouting();
+
+            app.UseCors("CorsAllowAll");
 
             app.UseAuthentication();
 
