@@ -10,7 +10,7 @@ namespace EpubWebLibraryServer.Areas.Library.Data
         {
         }
 
-        public DbSet<EpubFile> EpubFiles { get; set; }
+        public DbSet<EpubFile> EpubFiles => Set<EpubFile>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

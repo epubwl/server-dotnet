@@ -15,7 +15,7 @@ namespace EpubWebLibraryServer.Areas.Library.Data
         {
         }
 
-        public DbSet<EpubMetadata> EpubMetadata { get; set; }
+        public DbSet<EpubMetadata> EpubMetadata => Set<EpubMetadata>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {   
@@ -29,10 +29,10 @@ namespace EpubWebLibraryServer.Areas.Library.Data
             modelBuilder.Entity<EpubMetadata>()
                 .Property(e => e.Tags)
                 .HasConversion(
-                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
-                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null),
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>(),
                     new ValueComparer<ICollection<string>>(
-                        (c1, c2) => c1.SequenceEqual(c2),
+                        (c1, c2) => (c1 ?? new List<string>()).SequenceEqual((c2 ?? new List<string>())),
                         c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
                         c => (ICollection<string>)c.ToList()));
         }

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,9 +24,9 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             _epubMetadataParser = epubMetadataParser;
         }
 
-        public async Task<EpubMetadata> GetEpubMetadataAsync(int epubId)
+        public async Task<EpubMetadata?> GetEpubMetadataAsync(int epubId)
         {
-            EpubMetadata metadata = await _epubMetadataDbContext.EpubMetadata
+            EpubMetadata? metadata = await _epubMetadataDbContext.EpubMetadata
                 .Where(e => e.EpubId == epubId)
                 .FirstOrDefaultAsync();
             return metadata;
@@ -33,7 +34,11 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<EpubMetadata> UpdateEpubMetadataAsync(EpubMetadata newMetadata)
         {
-            EpubMetadata metadata = await GetEpubMetadataAsync(newMetadata.EpubId);
+            EpubMetadata? metadata = await GetEpubMetadataAsync(newMetadata.EpubId);
+            if (metadata is null)
+            {
+                throw new ArgumentException();
+            }
             _epubMetadataDbContext.Entry(metadata).CurrentValues.SetValues(newMetadata);
             await _epubMetadataDbContext.SaveChangesAsync();
             return newMetadata;
@@ -80,7 +85,11 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             await using (binaryStream)
             {
                 await _epubBinaryDataStorage.ReplaceEpubAsync(epubId, binaryStream);
-                EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
+                EpubMetadata? metadata = await GetEpubMetadataAsync(epubId);
+                if (metadata is null)
+                {
+                    throw new ArgumentException();
+                }
                 return metadata;
             }
         }
@@ -89,7 +98,11 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         {
             await _epubBinaryDataStorage.DeleteCoverAsync(epubId);
             await _epubBinaryDataStorage.DeleteEpubAsync(epubId);
-            EpubMetadata metadata = await GetEpubMetadataAsync(epubId);
+            EpubMetadata? metadata = await GetEpubMetadataAsync(epubId);
+            if (metadata is null)
+            {
+                throw new ArgumentException();
+            }
             _epubMetadataDbContext.Remove(metadata);
             await _epubMetadataDbContext.SaveChangesAsync();
             return metadata;

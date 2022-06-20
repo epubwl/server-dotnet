@@ -4,8 +4,8 @@ namespace EpubWebLibraryServer.Areas.Library.Models
     {
         public int EpubId { get; set; }
 
-        public byte[] BinaryData { get; set; }
+        public byte[] BinaryData { get; set; } = {};
 
-        public string Mimetype { get; set; }
+        public string Mimetype { get; set; } = "";
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.IO;
@@ -102,18 +103,27 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<string> GetCoverMimetypeAsync(int epubId)
         {
+            string unknownMimetype = "application/octet-stream";
             string commandText = "SELECT \"Mimetype\" FROM \"EpubCovers\" WHERE \"EpubId\"=@EpubId";
             var parameters = new Dictionary<string, object>
             {
                 ["@EpubId"] = epubId
             };
             string mimetype;
-            await using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            await using (DbConnection? dbConnection = _dbProviderFactory.CreateConnection())
             {
+                if (dbConnection is null)
+                {
+                    return unknownMimetype;
+                }
                 dbConnection.ConnectionString = _connectionString;
                 dbConnection.Open();
-                await using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
+                await using (DbCommand? dbCommand = _dbProviderFactory.CreateCommand())
                 {
+                    if (dbCommand is null)
+                    {
+                        return unknownMimetype;
+                    }
                     dbCommand.Connection = dbConnection;
                     dbCommand.CommandText = commandText;
                     foreach (KeyValuePair<string, object> parameter in parameters)
@@ -161,12 +171,20 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         private async Task ExecuteNonQueryAsync(string commandText, IDictionary<string, object> parameters)
         {
-            await using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            await using (DbConnection? dbConnection = _dbProviderFactory.CreateConnection())
             {
+                if (dbConnection is null)
+                {
+                    throw new InvalidOperationException();
+                }
                 dbConnection.ConnectionString = _connectionString;
                 dbConnection.Open();
-                await using (DbCommand dbCommand = _dbProviderFactory.CreateCommand())
+                await using (DbCommand? dbCommand = _dbProviderFactory.CreateCommand())
                 {
+                    if (dbCommand is null)
+                    {
+                        throw new InvalidOperationException();
+                    }
                     dbCommand.Connection = dbConnection;
                     dbCommand.CommandText = commandText;
                     foreach (KeyValuePair<string, object> parameter in parameters)
@@ -183,30 +201,40 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         private async Task<DbStream> ExecuteStreamAsync(string commandText, IDictionary<string, object> parameters)
         {
-            await using (DbConnection dbConnection = _dbProviderFactory.CreateConnection())
+            await using (DbConnection? dbConnection = _dbProviderFactory.CreateConnection())
             {
+                if (dbConnection is null)
+                {
+                    throw new InvalidOperationException();
+                }
                 dbConnection.ConnectionString = _connectionString;
                 await dbConnection.OpenAsync();
-
-                DbCommand dbCommand = _dbProviderFactory.CreateCommand();
-                dbCommand.CommandText = commandText;
-                dbCommand.Connection = dbConnection;
-
-                foreach (KeyValuePair<string, object> parameter in parameters)
+                
+                await using (DbCommand? dbCommand = _dbProviderFactory.CreateCommand())
                 {
-                    DbParameter dbParameter = dbCommand.CreateParameter();
-                    dbParameter.ParameterName = parameter.Key;
-                    dbParameter.Value = parameter.Value;
-                    dbCommand.Parameters.Add(dbParameter);
+                    if (dbCommand is null)
+                    {
+                        throw new InvalidOperationException();
+                    }
+                    dbCommand.CommandText = commandText;
+                    dbCommand.Connection = dbConnection;
+
+                    foreach (KeyValuePair<string, object> parameter in parameters)
+                    {
+                        DbParameter dbParameter = dbCommand.CreateParameter();
+                        dbParameter.ParameterName = parameter.Key;
+                        dbParameter.Value = parameter.Value;
+                        dbCommand.Parameters.Add(dbParameter);
+                    }
+
+                    DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
+
+                    Stream stream = await dbDataReader.ReadAsync() && !(await dbDataReader.IsDBNullAsync(0))
+                        ? dbDataReader.GetStream(0)
+                        : Stream.Null;
+
+                    return new DbStream(dbConnection, dbCommand, dbDataReader, stream);
                 }
-
-                DbDataReader dbDataReader = await dbCommand.ExecuteReaderAsync();
-
-                Stream stream = await dbDataReader.ReadAsync() && !(await dbDataReader.IsDBNullAsync(0))
-                    ? dbDataReader.GetStream(0)
-                    : Stream.Null;
-
-                return new DbStream(dbConnection, dbCommand, dbDataReader, stream);
             }
             
         }

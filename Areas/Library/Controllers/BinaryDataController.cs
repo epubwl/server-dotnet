@@ -38,7 +38,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         public async Task<IActionResult> DownloadEpub(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            EpubMetadata? metadata = await _epubManager.GetEpubMetadataAsync(epubId);
             if (metadata is null)
             {
                 return NotFound();
@@ -57,7 +57,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         public async Task<IActionResult> UploadAndReplaceEpub(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            EpubMetadata? metadata = await _epubManager.GetEpubMetadataAsync(epubId);
             if (metadata is null)
             {
                 return NotFound();
@@ -75,7 +75,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         public async Task<IActionResult> DeleteEpub(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            EpubMetadata? metadata = await _epubManager.GetEpubMetadataAsync(epubId);
             if (metadata is null)
             {
                 return NotFound();
@@ -93,7 +93,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         public async Task<IActionResult> GetCover(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            EpubMetadata? metadata = await _epubManager.GetEpubMetadataAsync(epubId);
             if (metadata is null)
             {
                 return NotFound();
@@ -113,7 +113,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         public async Task<IActionResult> UploadAndReplaceEpubCover(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            EpubMetadata? metadata = await _epubManager.GetEpubMetadataAsync(epubId);
             if (metadata is null)
             {
                 return NotFound();
@@ -122,7 +122,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             {
                 return Unauthorized();
             }
-            await _epubManager.ReplaceEpubCoverAsync(epubId, Request.Body, HttpContext.Request.ContentType);
+            await _epubManager.ReplaceEpubCoverAsync(epubId, Request.Body, HttpContext.Request.ContentType ?? "application/octet-stream");
             return NoContent();
         }
     }

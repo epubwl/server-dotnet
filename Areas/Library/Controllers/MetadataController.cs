@@ -25,7 +25,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         public async Task<IActionResult> GetEpubMetadata(int epubId)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(epubId);
+            EpubMetadata? metadata = await _epubManager.GetEpubMetadataAsync(epubId);
             if (metadata is null)
             {
                 return NotFound();
@@ -42,7 +42,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         public async Task<IActionResult> UpdateEpubMetadata([FromBody] EpubMetadata newMetadata)
         {
             string username = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            EpubMetadata metadata = await _epubManager.GetEpubMetadataAsync(newMetadata.EpubId);
+            EpubMetadata? metadata = await _epubManager.GetEpubMetadataAsync(newMetadata.EpubId);
             if (metadata is null)
             {
                 return NotFound();
