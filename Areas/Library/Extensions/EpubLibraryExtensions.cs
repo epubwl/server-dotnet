@@ -32,7 +32,16 @@ namespace EpubWebLibraryServer.Areas.Library.Extensions
         {
             services.AddScoped<EpubManager>();
 
+            return services;
+        }
+
+        public static IServiceCollection AddEpubParser(this IServiceCollection services)
+        {
+            services.AddSingleton<Epub3ParsingStrategy>();
+            services.AddSingleton<Epub2ParsingStrategy>();
             services.AddSingleton<EpubParser>();
+
+            services.AddSingleton<XmlNamespaceProvider>();
 
             return services;
         }

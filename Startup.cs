@@ -46,6 +46,7 @@ namespace EpubWebLibraryServer
             services.AddEpubMetadataStorage(dbContextOptionsAction);
             services.AddEpubBinaryDataDbStorage(dbContextOptionsAction, ChooseEpubStorageDbProviderFactory(), ChooseEpubStorageConnectionString());
             services.AddEpubManager();
+            services.AddEpubParser();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
