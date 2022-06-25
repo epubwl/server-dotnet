@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -46,6 +47,63 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             }
         }
 
+        public bool TryParseCreators(XDocument opfDocument, in EpubMetadata metadata)
+        {
+            IEnumerable<XElement>? creators = opfDocument
+                ?.Element(_xmlNamespaceProvider.OpfNamespace + "package")
+                ?.Element(_xmlNamespaceProvider.OpfNamespace + "metadata")
+                ?.Elements(_xmlNamespaceProvider.DcNamespace + "creator");
+            if (creators is null)
+            {
+                return false;
+            }
+            try
+            {
+                var creatorRoles = new Dictionary<string, List<string>>();
+                var creatorIds = new Dictionary<string, List<string>>();
+                foreach (XElement creator in creators)
+                {
+                    string name = creator.Value;
+                    string? id = creator.Attribute("id")?.Value;
+                    if (id is not null)
+                    {
+                        IEnumerable<XElement>? metaRoles = opfDocument
+                            ?.Element(_xmlNamespaceProvider.OpfNamespace + "package")
+                            ?.Element(_xmlNamespaceProvider.OpfNamespace + "metadata")
+                            ?.Elements(_xmlNamespaceProvider.DcNamespace + "meta")
+                            .Where(e => e.Attribute("refines")?.Value == $"#{id}");
+                        List<string>? roles;
+                        creatorRoles.TryGetValue(name, out roles);
+                        if (roles is null)
+                        {
+                            roles = new List<string>();
+                            creatorRoles[name] = roles;
+                        }
+                        if (metaRoles is not null)
+                        {
+                            foreach (XElement metaRole in metaRoles)
+                            {
+                                if (!String.IsNullOrEmpty(metaRole.Value))
+                                {
+                                    roles.Add(metaRole.Value);
+                                }
+                            }
+                        }
+                    }
+                }
+                metadata.Creators = String.Join(", ",
+                    creatorRoles.Select(kvp => {
+                        return kvp.Value.Count > 0
+                            ? $"{kvp.Key} ({String.Join(",", kvp.Value)})"
+                            : kvp.Key;}));
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         public bool TryParseDate(XDocument opfDocument, in EpubMetadata metadata)
         {
             string? date = opfDocument
@@ -53,19 +111,19 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 ?.Element(_xmlNamespaceProvider.OpfNamespace + "metadata")
                 ?.Element(_xmlNamespaceProvider.DcNamespace + "date")
                 ?.Value;
-            if (date is not null)
+            if (date is null)
             {
-                try
-                {
-                    metadata.Date = DateTime.Parse(date, CultureInfo.InvariantCulture);
-                    return true;
-                }
-                catch (Exception)
-                {
-                    return false;
-                }
+                return false;
             }
-            return false;
+            try
+            {
+                metadata.Date = DateTime.Parse(date, CultureInfo.InvariantCulture);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public bool TryParseTitle(XDocument opfDocument, in EpubMetadata metadata)
@@ -75,12 +133,12 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                 ?.Element(_xmlNamespaceProvider.OpfNamespace + "metadata")
                 ?.Element(_xmlNamespaceProvider.DcNamespace + "title")
                 ?.Value;
-            if (title is not null)
+            if (title is null)
             {
-                metadata.Title = title;
-                return true;
+                return false;
             }
-            return false;
+            metadata.Title = title;
+            return true;
         }
     }
 }

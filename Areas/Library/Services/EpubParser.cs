@@ -34,6 +34,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                     IEpubParsingStrategy strategy = GetEpubParsingStrategy(opfDocument);
                     return new bool[]{
                         strategy.TryParseCover(zipArchive, opfDocument, opfPath, out coverStream, out coverMimetype),
+                        strategy.TryParseCreators(opfDocument, in metadata),
                         strategy.TryParseDate(opfDocument, in metadata),
                         strategy.TryParseTitle(opfDocument, in metadata)
                     }.Any(b => b);

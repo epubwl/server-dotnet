@@ -9,6 +9,8 @@ namespace EpubWebLibraryServer.Areas.Library.Services
     {
         bool TryParseCover(ZipArchive zipArchive, XDocument opfDocument, string opfPath, out Stream coverStream, out string coverMimetype);
 
+        bool TryParseCreators(XDocument opfDocument, in EpubMetadata metadata);
+
         bool TryParseDate(XDocument opfDocument, in EpubMetadata metadata);
 
         bool TryParseTitle(XDocument opfDocument, in EpubMetadata metadata);

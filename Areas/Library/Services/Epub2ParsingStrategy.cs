@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -50,6 +51,48 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             {
                 coverStream = Stream.Null;
                 coverMimetype = "application/octet-stream";
+                return false;
+            }
+        }
+
+        public bool TryParseCreators(XDocument opfDocument, in EpubMetadata metadata)
+        {
+            IEnumerable<XElement>? creators = opfDocument
+                ?.Element(_xmlNamespaceProvider.OpfNamespace + "package")
+                ?.Element(_xmlNamespaceProvider.OpfNamespace + "metadata")
+                ?.Elements(_xmlNamespaceProvider.DcNamespace + "creator");
+            if (creators is null)
+            {
+                return false;
+            }
+            try
+            {
+                var creatorRoles = new Dictionary<string, List<string>>();
+                foreach (XElement creator in creators)
+                {
+                    string name = creator.Value;
+                    string? role = creator.Attribute(_xmlNamespaceProvider.OpfNamespace + "role")?.Value;
+                    List<string>? roles;
+                    creatorRoles.TryGetValue(name, out roles);
+                    if (roles is null)
+                    {
+                        roles = new List<string>();
+                        creatorRoles[name] = roles;
+                    }
+                    if (role is not null)
+                    {
+                        roles.Add(role);
+                    }
+                }
+                metadata.Creators = String.Join(", ",
+                    creatorRoles.Select(kvp => {
+                        return kvp.Value.Count > 0
+                            ? $"{kvp.Key} ({String.Join(",", kvp.Value)})"
+                            : kvp.Key;}));
+                return true;
+            }
+            catch (Exception)
+            {
                 return false;
             }
         }
