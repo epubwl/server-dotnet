@@ -2,6 +2,7 @@
 
 ## Getting Started
 ```
+cd EpubWebLibraryServer
 ./setup.sh
 dotnet run
 ```
