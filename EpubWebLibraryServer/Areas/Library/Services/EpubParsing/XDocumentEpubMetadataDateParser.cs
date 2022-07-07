@@ -9,8 +9,8 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
     {
         public bool TryParse(XDocument opfDocument, in EpubMetadata metadata)
         {
-            XNamespace opfNamespace = EpubXmlNamespaceProvider.OpfNamespace;
-            XNamespace dcNamespace = EpubXmlNamespaceProvider.DcNamespace;
+            XNamespace opfNamespace = EpubXmlNamespaces.Opf;
+            XNamespace dcNamespace = EpubXmlNamespaces.Dc;
             string? date = opfDocument
                 ?.Element(opfNamespace + "package")
                 ?.Element(opfNamespace + "metadata")

@@ -10,7 +10,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
     {
         public bool TryParse(ZipArchive zipArchive, XDocument opfDocument, string opfPath, out Stream coverStream, out string coverMimetype)
         {
-            XNamespace opfNamespace = EpubXmlNamespaceProvider.OpfNamespace;
+            XNamespace opfNamespace = EpubXmlNamespaces.Opf;
             XElement? coverElement = opfDocument
                 ?.Element(opfNamespace + "package")
                 ?.Element(opfNamespace + "manifest")

@@ -67,7 +67,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
 
         private string GetOpfPath(ZipArchive zipArchive, XDocument containerXmlDocument)
         {
-            XNamespace containerNamespace = EpubXmlNamespaceProvider.ContainerNamespace;
+            XNamespace containerNamespace = EpubXmlNamespaces.Container;
             string? opfPath = containerXmlDocument
                 ?.Element(containerNamespace + "container")
                 ?.Element(containerNamespace + "rootfiles")
