@@ -42,7 +42,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
             catch (Exception)
             {
                 coverStream = Stream.Null;
-                coverMimetype = "application/octet-stream";
+                coverMimetype = EpubMimeTypes.Application.OctetStream;
                 return false;
             }
         }

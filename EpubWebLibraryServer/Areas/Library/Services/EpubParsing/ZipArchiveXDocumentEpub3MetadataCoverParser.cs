@@ -27,13 +27,13 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
                 coverStream = coverPath is null
                     ? Stream.Null
                     : zipArchive.GetEntry(coverPath.Replace("\\", "/"))?.Open() ?? Stream.Null;
-                coverMimetype = mediaType ?? "application/octet-stream";
+                coverMimetype = mediaType ?? EpubMimeTypes.Application.OctetStream;
                 return true;
             }
             catch (Exception)
             {
                 coverStream = Stream.Null;
-                coverMimetype = "application/octet-stream";
+                coverMimetype = EpubMimeTypes.Application.OctetStream;
                 return false;
             }
         }

@@ -103,7 +103,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         public async Task<string> GetCoverMimetypeAsync(int epubId)
         {
-            string unknownMimetype = "application/octet-stream";
+            string unknownMimetype = EpubMimeTypes.Application.OctetStream;
             string commandText = "SELECT \"Mimetype\" FROM \"EpubCovers\" WHERE \"EpubId\"=@EpubId";
             var parameters = new Dictionary<string, object>
             {

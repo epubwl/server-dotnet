@@ -16,15 +16,13 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
     {
         private readonly EpubManager _epubManager;
 
-        private const string _epubMimetype = "application/epub+zip";
-
         public BinaryDataController(EpubManager epubManager)
         {
             _epubManager = epubManager;
         }
 
         [HttpPost]
-        [Consumes(_epubMimetype)]
+        [Consumes(EpubMimeTypes.Application.EpubZip)]
         [Route("/api/epubs")]
         public async Task<IActionResult> UploadNewEpub()
         {
@@ -48,11 +46,11 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
                 return Unauthorized();
             }
             Stream binaryStream = await _epubManager.GetEpubAsync(epubId);
-            return File(binaryStream, _epubMimetype);
+            return File(binaryStream, EpubMimeTypes.Application.EpubZip);
         }
 
         [HttpPut]
-        [Consumes(_epubMimetype)]
+        [Consumes(EpubMimeTypes.Application.EpubZip)]
         [Route("/api/epubs/{epubId}")]
         public async Task<IActionResult> UploadAndReplaceEpub(int epubId)
         {
@@ -108,7 +106,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
         }
 
         [HttpPut]
-        [Consumes("image/gif", new string[] { "image/jpeg", "image/png", "image/svg+xml" })]
+        [Consumes(EpubMimeTypes.Image.Gif, new string[] { EpubMimeTypes.Image.Jpeg, EpubMimeTypes.Image.Png, EpubMimeTypes.Image.SvgXml })]
         [Route("/api/epubs/cover/{epubId}")]
         public async Task<IActionResult> UploadAndReplaceEpubCover(int epubId)
         {
@@ -122,7 +120,7 @@ namespace EpubWebLibraryServer.Areas.Library.Controllers
             {
                 return Unauthorized();
             }
-            await _epubManager.ReplaceEpubCoverAsync(epubId, Request.Body, HttpContext.Request.ContentType ?? "application/octet-stream");
+            await _epubManager.ReplaceEpubCoverAsync(epubId, Request.Body, HttpContext.Request.ContentType ?? EpubMimeTypes.Application.OctetStream);
             return NoContent();
         }
     }
