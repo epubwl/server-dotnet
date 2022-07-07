@@ -4,6 +4,7 @@ using System;
 using System.Data.Common;
 using EpubWebLibraryServer.Areas.Library.Data;
 using EpubWebLibraryServer.Areas.Library.Services;
+using EpubWebLibraryServer.Areas.Library.Services.EpubParsing;
 
 namespace EpubWebLibraryServer.Areas.Library.Extensions
 {
@@ -37,11 +38,7 @@ namespace EpubWebLibraryServer.Areas.Library.Extensions
 
         public static IServiceCollection AddEpubParser(this IServiceCollection services)
         {
-            services.AddSingleton<Epub3ParsingStrategy>();
-            services.AddSingleton<Epub2ParsingStrategy>();
-            services.AddSingleton<EpubParser>();
-
-            services.AddSingleton<XmlNamespaceProvider>();
+            services.AddSingleton<IEpubParser, ZipArchiveXDocumentEpubParser>();
 
             return services;
         }

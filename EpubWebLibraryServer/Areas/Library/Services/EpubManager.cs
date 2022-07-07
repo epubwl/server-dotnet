@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EpubWebLibraryServer.Areas.Library.Data;
 using EpubWebLibraryServer.Areas.Library.Models;
+using EpubWebLibraryServer.Areas.Library.Services.EpubParsing;
 
 namespace EpubWebLibraryServer.Areas.Library.Services
 {
@@ -15,9 +16,9 @@ namespace EpubWebLibraryServer.Areas.Library.Services
         
         private readonly IEpubBinaryDataStorage _epubBinaryDataStorage;
 
-        private readonly EpubParser _epubParser;
+        private readonly IEpubParser _epubParser;
 
-        public EpubManager(EpubMetadataDbContext epubMetadataDbContext, IEpubBinaryDataStorage epubBinaryDataStorage, EpubParser epubParser)
+        public EpubManager(EpubMetadataDbContext epubMetadataDbContext, IEpubBinaryDataStorage epubBinaryDataStorage, IEpubParser epubParser)
         {
             _epubMetadataDbContext = epubMetadataDbContext;
             _epubBinaryDataStorage = epubBinaryDataStorage;

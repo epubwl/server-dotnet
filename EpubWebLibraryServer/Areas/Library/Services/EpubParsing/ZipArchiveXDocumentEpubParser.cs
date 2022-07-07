@@ -1,26 +1,30 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Xml.Linq;
 using EpubWebLibraryServer.Areas.Library.Models;
 
-namespace EpubWebLibraryServer.Areas.Library.Services
+namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
 {
-    public class EpubParser
+    public class ZipArchiveXDocumentEpubParser : IEpubParser
     {
-        private readonly Epub3ParsingStrategy _epub3ParsingStrategy;
+        private readonly IZipArchiveXDocumentEpubMetadataCoverParser _epub2CoverParser = new ZipArchiveXDocumentEpub2MetadataCoverParser();
 
-        private readonly Epub2ParsingStrategy _epub2ParsingStrategy;
+        private readonly IZipArchiveXDocumentEpubMetadataCoverParser _epub3CoverParser = new ZipArchiveXDocumentEpub3MetadataCoverParser();
 
-        private readonly XmlNamespaceProvider _xmlNamespaceProvider;
-
-        public EpubParser(Epub3ParsingStrategy epub3ParsingStrategy, Epub2ParsingStrategy epub2ParsingStrategy, XmlNamespaceProvider xmlNamespaceProvider)
-        {
-            _epub3ParsingStrategy = epub3ParsingStrategy;
-            _epub2ParsingStrategy = epub2ParsingStrategy;
-            _xmlNamespaceProvider = xmlNamespaceProvider;
-        }
+        private readonly IReadOnlyCollection<IXDocumentEpubMetadataFieldParser> _epub2FieldParsers = new List<IXDocumentEpubMetadataFieldParser>{
+                new XDocumentEpubMetadataTitleParser(),
+                new XDocumentEpubMetadataDateParser(),
+                new XDocumentEpub2MetadataCreatorsParser()
+            }.AsReadOnly();
+        
+        private readonly IReadOnlyCollection<IXDocumentEpubMetadataFieldParser> _epub3FieldParsers = new List<IXDocumentEpubMetadataFieldParser>{
+                new XDocumentEpubMetadataTitleParser(),
+                new XDocumentEpubMetadataDateParser(),
+                new XDocumentEpub3MetadataCreatorsParser()
+            }.AsReadOnly();
 
         public bool TryParse(Stream epubStream, in EpubMetadata metadata, out Stream coverStream, out string coverMimetype)
         {
@@ -31,13 +35,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services
                     XDocument containerXmlDocument = GetContainerXmlDocument(zipArchive);
                     string opfPath = GetOpfPath(zipArchive, containerXmlDocument);
                     XDocument opfDocument = GetOpfDocument(zipArchive, opfPath);
-                    IEpubParsingStrategy strategy = GetEpubParsingStrategy(opfDocument);
-                    return new bool[]{
-                        strategy.TryParseCover(zipArchive, opfDocument, opfPath, out coverStream, out coverMimetype),
-                        strategy.TryParseCreators(opfDocument, in metadata),
-                        strategy.TryParseDate(opfDocument, in metadata),
-                        strategy.TryParseTitle(opfDocument, in metadata)
-                    }.Any(b => b);
+                    return SelectParserTryParse(zipArchive, opfDocument, opfPath, in metadata, out coverStream, out coverMimetype);
                 }
                 
             }
@@ -69,10 +67,11 @@ namespace EpubWebLibraryServer.Areas.Library.Services
 
         private string GetOpfPath(ZipArchive zipArchive, XDocument containerXmlDocument)
         {
+            XNamespace containerNamespace = EpubXmlNamespaceProvider.ContainerNamespace;
             string? opfPath = containerXmlDocument
-                ?.Element(_xmlNamespaceProvider.ContainerNamespace + "container")
-                ?.Element(_xmlNamespaceProvider.ContainerNamespace + "rootfiles")
-                ?.Element(_xmlNamespaceProvider.ContainerNamespace + "rootfile")
+                ?.Element(containerNamespace + "container")
+                ?.Element(containerNamespace + "rootfiles")
+                ?.Element(containerNamespace + "rootfile")
                 ?.Attribute("full-path")?.Value;
             if (opfPath is null)
             {
@@ -99,20 +98,33 @@ namespace EpubWebLibraryServer.Areas.Library.Services
             }
         }
 
-        private IEpubParsingStrategy GetEpubParsingStrategy(XDocument opfDocument)
+        private bool SelectParserTryParse(ZipArchive zipArchive, XDocument opfDocument, string opfPath, in EpubMetadata metadata, out Stream coverStream, out string coverMimetype)
         {
+            IZipArchiveXDocumentEpubMetadataCoverParser coverParser;
+            IReadOnlyCollection<IXDocumentEpubMetadataFieldParser> fieldParsers;
             string? version = opfDocument.Elements()
                 .Where(e => e.Name.LocalName == "package").SingleOrDefault()
                 ?.Attribute("version")?.Value;
             switch (version)
             {
                 case "3.0":
-                    return _epub3ParsingStrategy;
+                    coverParser = _epub3CoverParser;
+                    fieldParsers = _epub3FieldParsers;
+                    break;
                 case "2.0":
-                    return _epub2ParsingStrategy;
+                    coverParser = _epub2CoverParser;
+                    fieldParsers = _epub2FieldParsers;
+                    break;
                 default:
                     throw new ArgumentException();
             }
+            bool didParseCover = coverParser.TryParse(zipArchive, opfDocument, opfPath, out coverStream, out coverMimetype);
+            var didParseFields = new List<bool>();
+            foreach (IXDocumentEpubMetadataFieldParser fieldParser in fieldParsers)
+            {
+                didParseFields.Add(fieldParser.TryParse(opfDocument, in metadata));
+            }
+            return didParseCover || didParseFields.Any(b => b);
         }
     }
 }
