@@ -20,13 +20,13 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
             string? href = coverElement?.Attribute("href")?.Value;
             string? coverPath = href is null
                 ? null
-                : Path.Join(Directory.GetParent(opfPath)?.Name, href);
+                : Path.Join(Directory.GetParent(opfPath)?.Name, href).Replace("\\", "/");
             string? mediaType = coverElement?.Attribute("media-type")?.Value;
             try
             {
                 coverStream = coverPath is null
                     ? Stream.Null
-                    : zipArchive.GetEntry(coverPath.Replace("\\", "/"))?.Open() ?? Stream.Null;
+                    : zipArchive.GetEntry(coverPath)?.Open() ?? Stream.Null;
                 coverMimetype = mediaType ?? EpubMimeTypes.Application.OctetStream;
                 return true;
             }
