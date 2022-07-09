@@ -22,7 +22,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
             }
             try
             {
-                metadata.Date = DateTime.Parse(date, CultureInfo.InvariantCulture);
+                metadata.Date = DateTime.Parse(date, CultureInfo.InvariantCulture).ToUniversalTime();
                 return true;
             }
             catch (Exception)
