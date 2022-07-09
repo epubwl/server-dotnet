@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Xml.Linq;
 using EpubWebLibraryServer.Areas.Library.Models;
 
@@ -11,24 +13,20 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
         {
             XNamespace opfNamespace = EpubXmlNamespaces.Opf;
             XNamespace dcNamespace = EpubXmlNamespaces.Dc;
-            string? date = opfDocument
+            DateTime? date = opfDocument
                 ?.Element(opfNamespace + "package")
                 ?.Element(opfNamespace + "metadata")
-                ?.Element(dcNamespace + "date")
-                ?.Value;
+                ?.Elements(dcNamespace + "date")
+                ?.Where(d => {DateTime dateTime; return DateTime.TryParse(d.Value, out dateTime);})
+                ?.Select(d => DateTime.Parse(d.Value, CultureInfo.InvariantCulture).ToUniversalTime())
+                ?.OrderBy(d => d)
+                ?.First();
             if (date is null)
             {
                 return false;
             }
-            try
-            {
-                metadata.Date = DateTime.Parse(date, CultureInfo.InvariantCulture).ToUniversalTime();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            metadata.Date = date;
+            return true;
         }
     }
 }
