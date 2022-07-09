@@ -20,7 +20,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
                 ?.Select(d => ParseDateTime(d.Value))
                 ?.Where(d => d is not null)
                 ?.OrderBy(d => d)
-                ?.First();
+                ?.FirstOrDefault();
             if (date is null)
             {
                 return false;
