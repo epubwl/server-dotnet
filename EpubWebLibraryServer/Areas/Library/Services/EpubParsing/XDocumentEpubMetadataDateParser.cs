@@ -17,8 +17,8 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
                 ?.Element(opfNamespace + "package")
                 ?.Element(opfNamespace + "metadata")
                 ?.Elements(dcNamespace + "date")
-                ?.Where(d => {DateTime dateTime; return DateTime.TryParse(d.Value, out dateTime);})
-                ?.Select(d => DateTime.Parse(d.Value, CultureInfo.InvariantCulture).ToUniversalTime())
+                ?.Select(d => ParseDateTime(d.Value))
+                ?.Where(d => d is not null)
                 ?.OrderBy(d => d)
                 ?.First();
             if (date is null)
@@ -27,6 +27,13 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
             }
             metadata.Date = date;
             return true;
+        }
+
+        private DateTime? ParseDateTime(string? s)
+        {
+            return DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTime dateTime)
+                ? dateTime.ToUniversalTime()
+                : (DateTime?) null;
         }
     }
 }
