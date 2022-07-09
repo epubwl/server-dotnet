@@ -16,7 +16,7 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
                 ?.Element(opfNamespace + "manifest")
                 ?.Elements(opfNamespace + "item")
                 ?.Where(e => e.Attribute("properties")?.Value == "cover-image")
-                ?.First();
+                ?.FirstOrDefault();
             string? href = coverElement?.Attribute("href")?.Value;
             string? coverPath = href is null
                 ? null

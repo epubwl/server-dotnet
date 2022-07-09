@@ -16,14 +16,14 @@ namespace EpubWebLibraryServer.Areas.Library.Services.EpubParsing
                 ?.Element(opfNamespace + "metadata")
                 ?.Elements(opfNamespace + "meta")
                 ?.Where(e => e.Attribute("name")?.Value == "cover")
-                ?.First()?.Attribute("content")?.Value;
+                ?.FirstOrDefault()?.Attribute("content")?.Value;
             XElement? coverElement = coverId is not null
                 ? opfDocument
                     ?.Element(opfNamespace + "package")
                     ?.Element(opfNamespace + "manifest")
                     ?.Elements(opfNamespace + "item")
                     ?.Where(e => e.Attribute("id")?.Value == coverId)
-                    ?.First()
+                    ?.FirstOrDefault()
                 : null;
             string? href = coverElement?.Attribute("href")?.Value;
             string? coverPath = href is null
